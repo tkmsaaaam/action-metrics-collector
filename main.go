@@ -3,7 +3,9 @@ package main
 import (
 	"log"
 	"os"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/slack-go/slack"
@@ -48,17 +50,34 @@ func main() {
 		log.Println("can not get messages response", err)
 		return
 	}
-	m := map[string]int{}
+	m := map[string][]time.Time{}
 	for _, message := range messagesResponse.Messages {
+		unixTime, err := strconv.ParseInt(strings.Split(message.Timestamp, ".")[0], 10, 64)
+		if err != nil {
+			continue
+		}
+		unixNanoTime, err := strconv.ParseInt(strings.Split(message.Timestamp, ".")[0], 10, 64)
+		if err != nil {
+			continue
+		}
+		t := time.Unix(unixTime, unixNanoTime)
 		v, ok := m[message.Text]
 		if ok {
-			v = v + 1
+			m[message.Text] = append(v, t)
 		} else {
-			m[message.Text] = 1
+			m[message.Text] = []time.Time{t}
 		}
 	}
 	log.Println("Result:")
 	for k, v := range m {
-		log.Println(k, ":", v)
+		sort.Slice(v, func(i, j int) bool { return v[i].Unix() < v[j].Unix() })
+		log.Println(k, ":", len((v)))
+		for i := 0; i < len(v); i++ {
+			var d time.Duration = 0
+			if i >= 1 {
+				d = v[i].Sub(v[i-1])
+			}
+			log.Println(v[i], ":", d)
+		}
 	}
 }
