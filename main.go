@@ -72,12 +72,18 @@ func main() {
 	for k, v := range m {
 		sort.Slice(v, func(i, j int) bool { return v[i].Unix() < v[j].Unix() })
 		log.Println(k, ":", len((v)))
+		var sum float64 = 0
 		for i := 0; i < len(v); i++ {
 			var d time.Duration = 0
 			if i >= 1 {
 				d = v[i].Sub(v[i-1])
+				sum += d.Seconds()
 			}
 			log.Println(v[i], ":", d)
+		}
+		if len(v) > 1 {
+			avg := time.Duration(sum / float64(len(v)-1) * float64(time.Second))
+			log.Println("average:", avg)
 		}
 	}
 }
