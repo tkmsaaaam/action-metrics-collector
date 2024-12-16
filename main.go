@@ -79,7 +79,7 @@ func main() {
 				d = v[i].Sub(v[i-1])
 				sum += d.Seconds()
 			}
-			log.Println(v[i], ":", d)
+			log.Println(i+1, ":", v[i], ":", d)
 		}
 		if len(v) > 1 {
 			avg := time.Duration(sum / float64(len(v)-1) * float64(time.Second))
