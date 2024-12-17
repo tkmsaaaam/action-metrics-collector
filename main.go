@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -52,6 +53,9 @@ func main() {
 	}
 	m := map[string][]time.Time{}
 	for _, message := range messagesResponse.Messages {
+		if re := regexp.MustCompile(`[a-z0-9_]+`); !re.MatchString(message.Text) {
+			continue
+		}
 		unixTime, err := strconv.ParseInt(strings.Split(message.Timestamp, ".")[0], 10, 64)
 		if err != nil {
 			continue
