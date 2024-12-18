@@ -56,11 +56,12 @@ func main() {
 		if re := regexp.MustCompile(`[a-z0-9_]+`); !re.MatchString(message.Text) {
 			continue
 		}
-		unixTime, err := strconv.ParseInt(strings.Split(message.Timestamp, ".")[0], 10, 64)
+		ary := strings.Split(message.Timestamp, ".")
+		unixTime, err := strconv.ParseInt(ary[0], 10, 64)
 		if err != nil {
 			continue
 		}
-		unixNanoTime, err := strconv.ParseInt(strings.Split(message.Timestamp, ".")[1], 10, 64)
+		unixNanoTime, err := strconv.ParseInt(ary[1], 10, 64)
 		if err != nil {
 			continue
 		}
@@ -75,7 +76,7 @@ func main() {
 	log.Println("Result:")
 	for k, v := range m {
 		sort.Slice(v, func(i, j int) bool { return v[i].Unix() < v[j].Unix() })
-		log.Println(k, ":", len((v)))
+		log.Println(k, ":", len((v)), "times")
 		var sum float64 = 0
 		for i := 0; i < len(v); i++ {
 			var d time.Duration = 0
