@@ -60,7 +60,7 @@ func main() {
 		if err != nil {
 			continue
 		}
-		unixNanoTime, err := strconv.ParseInt(strings.Split(message.Timestamp, ".")[0], 10, 64)
+		unixNanoTime, err := strconv.ParseInt(strings.Split(message.Timestamp, ".")[1], 10, 64)
 		if err != nil {
 			continue
 		}
