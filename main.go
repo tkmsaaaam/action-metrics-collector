@@ -51,7 +51,7 @@ func main() {
 		log.Println("can not get messages response", err)
 		return
 	}
-	m := map[string][]time.Time{}
+	m := map[string][]*time.Time{}
 	for _, message := range messagesResponse.Messages {
 		if re := regexp.MustCompile(`[a-z0-9_]+`); !re.MatchString(message.Text) {
 			continue
@@ -68,9 +68,9 @@ func main() {
 		t := time.Unix(unixTime, unixNanoTime)
 		v, ok := m[message.Text]
 		if ok {
-			m[message.Text] = append(v, t)
+			m[message.Text] = append(v, &t)
 		} else {
-			m[message.Text] = []time.Time{t}
+			m[message.Text] = []*time.Time{&t}
 		}
 	}
 	log.Println("Result:")
@@ -81,7 +81,7 @@ func main() {
 		for i := 0; i < len(v); i++ {
 			var d time.Duration = 0
 			if i >= 1 {
-				d = v[i].Sub(v[i-1])
+				d = v[i].Sub(*(v[i-1]))
 				sum += d.Seconds()
 			}
 			log.Println(i+1, ":", v[i], ":", d)
