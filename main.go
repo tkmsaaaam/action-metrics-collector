@@ -12,6 +12,16 @@ import (
 	"github.com/slack-go/slack"
 )
 
+type Result struct {
+	Details []*Detail
+	sum     *time.Duration
+}
+
+type Detail struct {
+	t    *time.Time
+	diff *time.Duration
+}
+
 func main() {
 	token := os.Getenv("SLACK_TOKEN")
 	if token == "" {
@@ -51,7 +61,10 @@ func main() {
 		log.Println("can not get messages response", err)
 		return
 	}
-	m := map[string][]*time.Time{}
+	m := map[string]*Result{}
+	sort.Slice(messagesResponse.Messages, func(i, j int) bool {
+		return messagesResponse.Messages[i].Timestamp < messagesResponse.Messages[j].Timestamp
+	})
 	for _, message := range messagesResponse.Messages {
 		if re := regexp.MustCompile(`[a-z0-9_]+`); !re.MatchString(message.Text) {
 			continue
@@ -66,29 +79,29 @@ func main() {
 			continue
 		}
 		t := time.Unix(unixTime, unixNanoTime)
+		var d time.Duration = 0
 		v, ok := m[message.Text]
 		if ok {
-			m[message.Text] = append(v, &t)
+			d = t.Sub(*(v.Details[len(v.Details)-1].t))
+			sum := *(v.sum) + d
+			m[message.Text] = &Result{Details: append(v.Details, &Detail{t: &t, diff: &d}), sum: &sum}
 		} else {
-			m[message.Text] = []*time.Time{&t}
+			m[message.Text] = &Result{Details: []*Detail{{t: &t, diff: &d}}, sum: &d}
 		}
 	}
+	print(&m)
+}
+
+func print(m *map[string]*Result) {
 	log.Println("Result:")
-	for k, v := range m {
-		sort.Slice(v, func(i, j int) bool { return v[i].Unix() < v[j].Unix() })
-		log.Println(k, ":", len((v)), "times")
-		var sum float64 = 0
-		for i := 0; i < len(v); i++ {
-			var d time.Duration = 0
-			if i >= 1 {
-				d = v[i].Sub(*(v[i-1]))
-				sum += d.Seconds()
-			}
-			log.Println(i+1, ":", v[i], ":", d)
+	for k, v := range *m {
+		log.Println(k, ":", len((v.Details)), "times")
+		for i := 0; i < len(v.Details); i++ {
+			log.Println(i+1, ":", v.Details[i].t, ":", v.Details[i].diff)
 		}
-		if len(v) > 1 {
-			avg := time.Duration(sum / float64(len(v)-1) * float64(time.Second))
-			log.Println("average:", avg)
+
+		if len(v.Details) > 1 {
+			log.Println("average:", float64(*(v.sum))/float64(len(v.Details)-1)*float64(time.Second))
 		}
 	}
 }
