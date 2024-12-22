@@ -61,11 +61,16 @@ func main() {
 		log.Println("can not get messages response", err)
 		return
 	}
+	m := makeMap(messagesResponse)
+	print(m)
+}
+
+func makeMap(res *slack.GetConversationHistoryResponse) *map[string]*Result {
 	m := map[string]*Result{}
-	sort.Slice(messagesResponse.Messages, func(i, j int) bool {
-		return messagesResponse.Messages[i].Timestamp < messagesResponse.Messages[j].Timestamp
+	sort.Slice(res.Messages, func(i, j int) bool {
+		return res.Messages[i].Timestamp < res.Messages[j].Timestamp
 	})
-	for _, message := range messagesResponse.Messages {
+	for _, message := range res.Messages {
 		if re := regexp.MustCompile(`[a-z0-9_]+`); !re.MatchString(message.Text) {
 			continue
 		}
@@ -89,7 +94,7 @@ func main() {
 			m[message.Text] = &Result{Details: []*Detail{{t: &t, diff: &d}}, sum: &d}
 		}
 	}
-	print(&m)
+	return &m
 }
 
 func print(m *map[string]*Result) {
