@@ -12,6 +12,8 @@ func TestMakeMap(t *testing.T) {
 
 	a := time.Date(2017, 12, 1, 8, 52, 30, 0, time.Local)
 	b := 0 * time.Second
+	c := time.Date(2017, 12, 1, 8, 52, 40, 0, time.Local)
+	d := 10 * time.Second
 
 	tests := []struct {
 		name   string
@@ -19,9 +21,14 @@ func TestMakeMap(t *testing.T) {
 		want   map[string]*Result
 	}{
 		{
-			name:   "test",
+			name:   "one event",
 			apiRes: &slack.GetConversationHistoryResponse{Messages: []slack.Message{{Msg: slack.Msg{Text: "test", Timestamp: "1512085950.000000"}}}},
 			want:   map[string]*Result{"test": {Details: []*Detail{{t: &a, diff: &b}}, sum: &b}},
+		},
+				{
+			name:   "two events",
+			apiRes: &slack.GetConversationHistoryResponse{Messages: []slack.Message{{Msg: slack.Msg{Text: "test", Timestamp: "1512085950.000000"}}, {Msg: slack.Msg{Text: "test", Timestamp: "1512085960.000000"}}}},
+			want:   map[string]*Result{"test": {Details: []*Detail{{t: &a, diff: &b}, {t: &c, diff: &d}}, sum: &d}},
 		},
 	}
 
@@ -32,17 +39,17 @@ func TestMakeMap(t *testing.T) {
 				t.Errorf("makeMap() = %v, want %v", *got, tt.want)
 			}
 			if len(*got) != len(tt.want) {
-				t.Errorf("makeMap() = %v, want %v", *got, tt.want)
+				t.Errorf("makeMap() = %v, want %v", len(*got), len(tt.want))
 			}
 			for k, v := range tt.want {
 				if _, ok := (*got)[k]; !ok {
-					t.Errorf("makeMap() = %v, want %v", *got, tt.want)
+					t.Errorf("makeMap() = %v, want %v", (*got)[k], tt.want)
 				}
 				if len((*got)[k].Details) != len(v.Details) {
-					t.Errorf("makeMap() = %v, want %v", *got, tt.want)
+					t.Errorf("makeMap() = %v, want %v", len((*got)[k].Details), len(v.Details))
 				}
 				if *((*got)[k].sum) != *(v.sum) {
-					t.Errorf("makeMap() = %v, want %v", *got, tt.want)
+					t.Errorf("makeMap() = %v, want %v", *((*got)[k].sum), *(v.sum))
 				}
 				sort.Slice(v.Details, func(i, j int) bool {
 					return v.Details[i].t.Unix() < v.Details[j].t.Unix()
@@ -52,10 +59,10 @@ func TestMakeMap(t *testing.T) {
 				})
 				for i := 0; i < len(v.Details); i++ {
 					if v.Details[i].t.Unix() != (*got)[k].Details[i].t.Unix() {
-						t.Errorf("makeMap() = %v, want %v", *got, tt.want)
+						t.Errorf("makeMap() = %v, want %v", v.Details[i].t.Unix(), (*got)[k].Details[i].t.Unix())
 					}
 					if *(v.Details[i].diff) != *((*got)[k].Details[i].diff) {
-						t.Errorf("makeMap() = %v, want %v", *got, tt.want)
+						t.Errorf("makeMap() = %v, want %v", *(v.Details[i].diff), *((*got)[k].Details[i].diff))
 					}
 				}
 			}
