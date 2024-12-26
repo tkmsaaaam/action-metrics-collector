@@ -106,7 +106,7 @@ func print(m *map[string]*Result) {
 		}
 
 		if len(v.Details) > 1 {
-			log.Println("average:", float64(*(v.sum))/float64(len(v.Details)-1)*float64(time.Second))
+			log.Println("average:", (*v.sum).Seconds()/float64(len(v.Details)-1), "s")
 		}
 	}
 }
