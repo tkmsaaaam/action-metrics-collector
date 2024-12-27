@@ -33,6 +33,11 @@ func TestMakeMap(t *testing.T) {
 			want:   map[string]*Result{},
 		},
 		{
+			name:   "invalid time format",
+			apiRes: &slack.GetConversationHistoryResponse{Messages: []slack.Message{{Msg: slack.Msg{Text: "test", Timestamp: ""}}}},
+			want:   map[string]*Result{},
+		},
+		{
 			name:   "invalid time",
 			apiRes: &slack.GetConversationHistoryResponse{Messages: []slack.Message{{Msg: slack.Msg{Text: "test", Timestamp: "a.000000"}}}},
 			want:   map[string]*Result{},
