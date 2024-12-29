@@ -12,15 +12,17 @@ import (
 	"github.com/slack-go/slack"
 )
 
-func TestMakeMap(t *testing.T) {
+var (
+	zero                           = 0 * time.Second
+	ten                            = 10 * time.Second
+	date_1512085950_20171201085230 = time.Date(2017, 12, 1, 8, 52, 30, 0, time.Local)
+	date_1512085960_20171201085240 = time.Date(2017, 12, 1, 8, 52, 40, 0, time.Local)
+	date_1512085970_20171201085250 = time.Date(2017, 12, 1, 8, 52, 50, 0, time.Local)
+	date_1512085980_20171201085300 = time.Date(2017, 12, 1, 8, 53, 0, 0, time.Local)
+)
 
-	a := time.Date(2017, 12, 1, 8, 52, 30, 0, time.Local)
-	b := 0 * time.Second
-	c := time.Date(2017, 12, 1, 8, 52, 40, 0, time.Local)
-	d := 10 * time.Second
-	e := time.Date(2017, 12, 1, 8, 52, 50, 0, time.Local)
-	f := time.Date(2017, 12, 1, 8, 53, 0, 0, time.Local)
-	g := 30 * time.Second
+func TestMakeMap(t *testing.T) {
+	thirty := 30 * time.Second
 
 	tests := []struct {
 		name   string
@@ -50,17 +52,17 @@ func TestMakeMap(t *testing.T) {
 		{
 			name:   "one event",
 			apiRes: &slack.GetConversationHistoryResponse{Messages: []slack.Message{{Msg: slack.Msg{Text: "test", Timestamp: "1512085950.000000"}}}},
-			want:   map[string]*Result{"test": {Details: []*Detail{{t: &a, diff: &b}}, sum: &b}},
+			want:   map[string]*Result{"test": {Details: []*Detail{{t: &date_1512085950_20171201085230, diff: &zero}}, sum: &zero}},
 		},
 		{
 			name:   "two events",
 			apiRes: &slack.GetConversationHistoryResponse{Messages: []slack.Message{{Msg: slack.Msg{Text: "test", Timestamp: "1512085950.000000"}}, {Msg: slack.Msg{Text: "test", Timestamp: "1512085960.000000"}}}},
-			want:   map[string]*Result{"test": {Details: []*Detail{{t: &a, diff: &b}, {t: &c, diff: &d}}, sum: &d}},
+			want:   map[string]*Result{"test": {Details: []*Detail{{t: &date_1512085950_20171201085230, diff: &zero}, {t: &date_1512085960_20171201085240, diff: &ten}}, sum: &ten}},
 		},
 		{
 			name:   "Multiple events of multiple types",
 			apiRes: &slack.GetConversationHistoryResponse{Messages: []slack.Message{{Msg: slack.Msg{Text: "another", Timestamp: "1512085950.000000"}}, {Msg: slack.Msg{Text: "test", Timestamp: "1512085960.000000"}}, {Msg: slack.Msg{Text: "test", Timestamp: "1512085970.000000"}}, {Msg: slack.Msg{Text: "another", Timestamp: "1512085980.000000"}}}},
-			want:   map[string]*Result{"test": {Details: []*Detail{{t: &c, diff: &b}, {t: &e, diff: &d}}, sum: &d}, "another": {Details: []*Detail{{t: &a, diff: &b}, {t: &f, diff: &g}}, sum: &g}},
+			want:   map[string]*Result{"test": {Details: []*Detail{{t: &date_1512085960_20171201085240, diff: &zero}, {t: &date_1512085970_20171201085250, diff: &ten}}, sum: &ten}, "another": {Details: []*Detail{{t: &date_1512085950_20171201085230, diff: &zero}, {t: &date_1512085980_20171201085300, diff: &thirty}}, sum: &thirty}},
 		},
 	}
 
@@ -103,13 +105,6 @@ func TestMakeMap(t *testing.T) {
 }
 
 func TestPrint(t *testing.T) {
-	a := 0 * time.Second
-	b := time.Date(2017, 12, 1, 8, 52, 30, 0, time.Local)
-	c := time.Date(2017, 12, 1, 8, 52, 40, 0, time.Local)
-	d := 10 * time.Second
-	e := time.Date(2017, 12, 1, 8, 52, 50, 0, time.Local)
-	f := time.Date(2017, 12, 1, 8, 53, 0, 0, time.Local)
-
 	tests := []struct {
 		name string
 		m    map[string]*Result
@@ -122,18 +117,18 @@ func TestPrint(t *testing.T) {
 		},
 		{
 			name: "one event",
-			m:    map[string]*Result{"test": {Details: []*Detail{{t: &b, diff: &a}}, sum: &a}},
-			want: "Result:\ntest : 1 times\n1 : 2017-12-01 08:52:30 +0900 JST : 0s",
+			m:    map[string]*Result{"test": {Details: []*Detail{{t: &date_1512085950_20171201085230, diff: &zero}}, sum: &zero}},
+			want: "Result:test : 1 times1 : 2017-12-01 08:52:30 +0900 JST : 0s",
 		},
 		{
 			name: "two events",
-			m:    map[string]*Result{"test": {Details: []*Detail{{t: &b, diff: &a}, {t: &c, diff: &d}}, sum: &d}},
-			want: "Result:\ntest : 2 times\n1 : 2017-12-01 08:52:30 +0900 JST : 0s\n2 : 2017-12-01 08:52:40 +0900 JST : 10s\naverage: 10 s",
+			m:    map[string]*Result{"test": {Details: []*Detail{{t: &date_1512085950_20171201085230, diff: &zero}, {t: &date_1512085960_20171201085240, diff: &ten}}, sum: &ten}},
+			want: "Result:test : 2 times1 : 2017-12-01 08:52:30 +0900 JST : 0s2 : 2017-12-01 08:52:40 +0900 JST : 10saverage: 10 s",
 		},
 		{
 			name: "Multiple events of multiple types",
-			m:    map[string]*Result{"test": {Details: []*Detail{{t: &b, diff: &a}, {t: &c, diff: &d}}, sum: &d}, "another": {Details: []*Detail{{t: &e, diff: &a}, {t: &f, diff: &d}}, sum: &d}},
-			want: "Result:\ntest : 2 times\n1 : 2017-12-01 08:52:30 +0900 JST : 0s\n2 : 2017-12-01 08:52:40 +0900 JST : 10s\naverage: 10 s\nanother : 2 times\n1 : 2017-12-01 08:52:50 +0900 JST : 0s\n2 : 2017-12-01 08:53:00 +0900 JST : 10s\naverage: 10 s",
+			m:    map[string]*Result{"test": {Details: []*Detail{{t: &date_1512085950_20171201085230, diff: &zero}, {t: &date_1512085960_20171201085240, diff: &ten}}, sum: &ten}, "another": {Details: []*Detail{{t: &date_1512085970_20171201085250, diff: &zero}, {t: &date_1512085980_20171201085300, diff: &ten}}, sum: &ten}},
+			want: "Result:test : 2 times1 : 2017-12-01 08:52:30 +0900 JST : 0s2 : 2017-12-01 08:52:40 +0900 JST : 10saverage: 10 sanother : 2 times1 : 2017-12-01 08:52:50 +0900 JST : 0s2 : 2017-12-01 08:53:00 +0900 JST : 10saverage: 10 s",
 		},
 	}
 
@@ -151,7 +146,7 @@ func TestPrint(t *testing.T) {
 				buf.Reset()
 			}()
 			print(&tt.m)
-			gotPrint := strings.TrimRight(buf.String(), "\n")
+			gotPrint := strings.ReplaceAll(buf.String(), "\n", "")
 			if gotPrint != tt.want {
 				t.Errorf("print() = \n%v,\nwant \n%v", gotPrint, tt.want)
 			}
