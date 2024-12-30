@@ -69,18 +69,15 @@ func TestMakeMap(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := makeMap(tt.apiRes)
-			if got == nil {
-				t.Errorf("makeMap() = %v, want %v", *got, tt.want)
-			}
 			if len(*got) != len(tt.want) {
 				t.Errorf("makeMap() = %v, want %v", len(*got), len(tt.want))
 			}
 			for k, v := range tt.want {
 				if _, ok := (*got)[k]; !ok {
-					t.Errorf("makeMap() = %v, want %v", (*got)[k], tt.want)
+					t.Errorf("%v is not found in %v", k, (*got))
 				}
 				if len((*got)[k].Details) != len(v.Details) {
-					t.Errorf("makeMap() len(details) = %v, want %v", len((*got)[k].Details), len(v.Details))
+					t.Errorf("makeMap() len(actual) = %v, len(want) %v", len((*got)[k].Details), len(v.Details))
 				}
 				if *((*got)[k].sum) != *(v.sum) {
 					t.Errorf("makeMap() sum = %v, want %v", *((*got)[k].sum), *(v.sum))
