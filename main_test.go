@@ -69,35 +69,41 @@ func TestMakeMap(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := makeMap(tt.apiRes)
-			if len(*got) != len(tt.want) {
-				t.Errorf("makeMap() = %v, want %v", len(*got), len(tt.want))
+			actual := *got
+			if len(actual) != len(tt.want) {
+				t.Errorf("makeMap() = %v, want %v", len(actual), len(tt.want))
 			}
 			for k, v := range tt.want {
-				if _, ok := (*got)[k]; !ok {
-					t.Errorf("%v is not found in %v", k, (*got))
+				result, ok := actual[k]
+				if !ok {
+					t.Errorf("%v is not found in %v", k, actual)
 				}
-				if len((*got)[k].Details) != len(v.Details) {
-					t.Errorf("makeMap() len(actual) = %v, len(want) %v", len((*got)[k].Details), len(v.Details))
+				if len(result.Details) != len(v.Details) {
+					t.Errorf("makeMap() len(actual) = %v, len(want) %v", len(result.Details), len(v.Details))
 				}
-				if *((*got)[k].sum) != *(v.sum) {
-					t.Errorf("makeMap() sum = %v, want %v", *((*got)[k].sum), *(v.sum))
+				if *(result.sum) != *(v.sum) {
+					t.Errorf("makeMap() sum = %v, want %v", *(result.sum), *(v.sum))
 				}
 				sort.Slice(v.Details, func(i, j int) bool {
 					return v.Details[i].t.Unix() < v.Details[j].t.Unix()
 				})
-				sort.Slice((*got)[k].Details, func(i, j int) bool {
-					return (*got)[k].Details[i].t.Unix() < (*got)[k].Details[j].t.Unix()
+				sort.Slice(result.Details, func(i, j int) bool {
+					return result.Details[i].t.Unix() < result.Details[j].t.Unix()
 				})
 				for i := 0; i < len(v.Details); i++ {
-					if v.Details[i].t.Unix() != (*got)[k].Details[i].t.Unix() {
-						t.Errorf("makeMap() unix = %v, want %v", v.Details[i].t.Unix(), (*got)[k].Details[i].t.Unix())
-					}
-					if *(v.Details[i].diff) != *((*got)[k].Details[i].diff) {
-						t.Errorf("makeMap() diff = %v, want %v", *(v.Details[i].diff), *((*got)[k].Details[i].diff))
-					}
+					v.Details[i].assert(result.Details[i], t)
 				}
 			}
 		})
+	}
+}
+
+func (d *Detail) assert(other *Detail, t *testing.T) {
+	if d.t.Unix() != other.t.Unix() {
+		t.Errorf("makeMap() unix = %v, want %v", d.t.Unix(), other.t.Unix())
+	}
+	if *(d.diff) != *(other.diff) {
+		t.Errorf("makeMap() diff = %v, want %v", *(d.diff), *(other.diff))
 	}
 }
 
