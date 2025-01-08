@@ -52,12 +52,12 @@ func TestMakeMap(t *testing.T) {
 		{
 			name:   "valid event name",
 			apiRes: &slack.GetConversationHistoryResponse{Messages: []slack.Message{{Msg: slack.Msg{Text: "test-example", Timestamp: "1512085950.000000"}}}},
-			want:   map[string]*Result{"test-example": {Details: []*Detail{{t: &date_1512085950_20171201085230, diff: &zero}}, sum: &zero}},
+			want:   map[string]*Result{},
 		},
 		{
 			name:   "valid event name",
 			apiRes: &slack.GetConversationHistoryResponse{Messages: []slack.Message{{Msg: slack.Msg{Text: "Test", Timestamp: "1512085950.000000"}}}},
-			want:   map[string]*Result{"Test": {Details: []*Detail{{t: &date_1512085950_20171201085230, diff: &zero}}, sum: &zero}},
+			want:   map[string]*Result{},
 		},
 		{
 			name:   "valid event name",

@@ -71,7 +71,7 @@ func makeMap(res *slack.GetConversationHistoryResponse) *map[string]*Result {
 		return res.Messages[i].Timestamp < res.Messages[j].Timestamp
 	})
 	for _, message := range res.Messages {
-		if re := regexp.MustCompile(`[a-z0-9_]+`); !re.MatchString(message.Text) {
+		if re := regexp.MustCompile("^[a-z0-9_]+$"); !re.MatchString(message.Text) {
 			continue
 		}
 		ary := strings.Split(message.Timestamp, ".")
