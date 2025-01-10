@@ -35,6 +35,11 @@ func TestMakeMap(t *testing.T) {
 			want:   map[string]*Result{},
 		},
 		{
+			name:   "invalid event with symbol",
+			apiRes: &slack.GetConversationHistoryResponse{Messages: []slack.Message{{Msg: slack.Msg{Text: "!", Timestamp: "1512085950.000000"}}}},
+			want:   map[string]*Result{},
+		},
+		{
 			name:   "text is empty",
 			apiRes: &slack.GetConversationHistoryResponse{Messages: []slack.Message{{Msg: slack.Msg{Text: "", Timestamp: "1512085950.000000"}}}},
 			want:   map[string]*Result{},
@@ -73,6 +78,11 @@ func TestMakeMap(t *testing.T) {
 			name:   "one event",
 			apiRes: &slack.GetConversationHistoryResponse{Messages: []slack.Message{{Msg: slack.Msg{Text: "test", Timestamp: "1512085950.000000"}}}},
 			want:   map[string]*Result{"test": {Details: []*Detail{{t: &date_1512085950_20171201085230, diff: &zero}}, sum: &zero}},
+		},
+		{
+			name:   "valid event name(underscore)",
+			apiRes: &slack.GetConversationHistoryResponse{Messages: []slack.Message{{Msg: slack.Msg{Text: "_", Timestamp: "1512085950.000000"}}}},
+			want:   map[string]*Result{"_": {Details: []*Detail{{t: &date_1512085950_20171201085230, diff: &zero}}, sum: &zero}},
 		},
 		{
 			name:   "two events",
